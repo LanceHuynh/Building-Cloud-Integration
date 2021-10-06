@@ -112,6 +112,7 @@ app.get('/item/findByStatus', (req, res) => {
 app.delete('/item/:itemId',/*authentication*/requireAuth,(req, res) => {
   index = database.items.findIndex((item, index) =>  index == req.params.itemId)
   database.items.slice(index,1)
+  res.status(201).send("item deleted")
 })
 
 app.post('/item/:itemId/uploadImage',/*authentication*/requireAuth,(req, res) => {
@@ -123,8 +124,8 @@ app.post('/user',validateUserInput, (req, res) => {
   // generate unique id
   newUser.id = uuidv4()
   // hash the password
-  newUser.password = getHashedPassword(re.body.password)
-  database.items.push(newUser)
+  newUser.password = getHashedPassword(req.body.password)
+  database.users.push(newUser)
   console.log(newUser)
   res.status(201).send("user created")
 })
