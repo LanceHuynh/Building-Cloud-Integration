@@ -74,7 +74,6 @@ app.post('/item',/*authentication*/requireAuth, validateItemInput, (req, res) =>
     phone: req.user.phone
   }
   database.items.push(newItem)
-  console.log(newItem)
   res.status(201).send("New item added")
 })
 
@@ -90,7 +89,23 @@ app.put('/item',/*authentication*/requireAuth, (req, res) => {
 //filter items by location, category, date
 
 app.get('/item/findByStatus', (req, res) => {
-  console.log(req.query)
+  let itemArray = []
+  if (req.query.category) {
+    itemArray = database.items.filter(item => item.category === req.query.category)
+  }
+
+  if (req.query.city) {
+    itemArray = itemArray.filter(item => item.city === req.query.city)
+  }
+
+  if (req.query.country) {
+    itemArray = itemArray.filter(item => item.country === req.query.country)
+  }
+
+  if (req.query.date) {
+    itemArray = itemArray.filter(item => item.date === req.query.date)
+  }
+  res.json(itemArray)
   res.status(201).send("ok")
 })
 
