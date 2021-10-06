@@ -1,0 +1,445 @@
+openapi: 3.0.0
+info:
+  description: |
+    a web application API which primary function is to serve as a platform for selling and buying used items
+  version: 1.0.4
+  title: Swagger itemstore
+  contact: {}
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: 'https://virtserver.swaggerhub.com/LanceHuynh/UsediItemsStore/1.0.0'
+  - url: 'https://itemstore.swagger.io/v2'
+tags:
+  - name: item
+    description: Everything about your items
+    externalDocs:
+      description: Find out more
+      url: 'http://swagger.io'
+  - name: store
+    description: Access to itemstore orders
+  - name: user
+    description: Operations about user
+    externalDocs:
+      description: Find out more about our store
+      url: 'http://swagger.io'
+paths:
+  /item:
+    post:
+      tags:
+        - item
+      summary: Add a new item to the store
+      operationId: additem
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorReponse'
+        '401':
+          description: Unauthorized
+      security:
+        - cookieAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/item'
+      description: Add new item
+    put:
+      tags:
+        - item
+      summary: Update an existing item
+      operationId: updateitem
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorReponse'
+        '401':
+          description: Unauthorized
+      security:
+        - cookieAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/item'
+      description: Modify item
+    get:
+      tags:
+        - item
+      summary: ''
+      operationId: get-item
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorReponse'
+      description: Show all items
+  /item/findByStatus:
+    get:
+      tags:
+        - item
+      summary: Finds items by status
+      description: 'search and list postings based on category, location, date of posting'
+      operationId: finditemsByStatus
+      parameters:
+        - in: query
+          explode: true
+          schema:
+            type: string
+            items:
+              type: string
+              enum:
+                - available
+                - pending
+                - sold
+              default: available
+          name: category
+        - schema:
+            type: string
+          in: query
+          name: country
+        - schema:
+            type: string
+          in: query
+          name: city
+        - schema:
+            type: string
+          in: query
+          name: date
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/item'
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/item'
+        '400':
+          description: Invalid status value
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorReponse'
+    parameters: []
+  '/item/{itemId}':
+    delete:
+      tags:
+        - item
+      summary: Deletes a item
+      operationId: deleteitem
+      parameters:
+        - name: itemId
+          in: path
+          description: item id to delete
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: item not found
+      security:
+        - cookieAuth: []
+      description: delete an item
+  '/item/{itemId}/uploadImage':
+    post:
+      tags:
+        - item
+      summary: uploads an image
+      operationId: uploadFile
+      parameters:
+        - name: itemId
+          in: path
+          description: ID of item to update
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorReponse'
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+  /user:
+    post:
+      tags:
+        - user
+      summary: Create user
+      description: This can only be done by the logged in user.
+      operationId: createUser
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorReponse'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        description: Created user object
+        required: true
+  /user/login:
+    get:
+      tags:
+        - user
+      summary: Logs user into the system
+      operationId: loginUser
+      parameters:
+        - name: username
+          in: query
+          description: The user name for login
+          required: true
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: The password for login in clear text
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: string
+            application/xml:
+              schema:
+                type: string
+        '400':
+          description: Invalid username/password supplied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+            application/xml:
+              schema:
+                type: object
+                properties: {}
+  /user/logout:
+    get:
+      tags:
+        - user
+      summary: Logs out current logged in user session
+      operationId: logoutUser
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorReponse'
+externalDocs:
+  description: Find out more about Swagger
+  url: 'http://swagger.io'
+components:
+  schemas:
+    User:
+      type: object
+      xml:
+        name: User
+      x-examples:
+        example-1:
+          id: 1
+          username: t6huho00
+          firstName: Lan
+          lastName: Huynh
+          email: t6huho00@students.oamk.fi
+          password: password
+          phone: 098 765 4321
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        phone:
+          type: string
+      required:
+        - username
+        - firstName
+        - lastName
+        - email
+        - password
+        - phone
+    item:
+      type: object
+      xml:
+        name: item
+      x-examples:
+        example-1:
+          id: 1
+          title: Couch
+          description: Couch description
+          category: Furniture
+          country: Finland
+          city: Oulu
+          photoUrls:
+            - couch1.png
+            - couch1.png
+          price: 15.5
+          date: '2017-07-21'
+          delivery: Shipping
+          sellerInfo:
+            firstName: Lan
+            lastName: Huynh
+            email: t6huho00@students.oamk.fi
+            phone: 098 765 4321
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum:
+            - Furniture
+            - Clothing
+            - Vehicles
+            - Small appliances
+            - Domestic Appliances
+            - Other
+        country:
+          type: string
+        city:
+          type: string
+        photoUrls:
+          type: array
+          xml:
+            name: photoUrl
+            wrapped: true
+          maxItems: 4
+          items:
+            type: string
+        price:
+          type: number
+        date:
+          type: string
+          format: date
+          example: '2017-07-21'
+        delivery:
+          type: string
+          enum:
+            - Shipping
+            - Pick-up
+        sellerInfo:
+          $ref: '#/components/schemas/UserContactInfo'
+      required:
+        - title
+        - description
+        - category
+        - country
+        - city
+        - photoUrls
+        - price
+        - date
+        - delivery
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        type:
+          type: string
+        message:
+          type: string
+    UserContactInfo:
+      title: UserContactInfo
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+      x-examples:
+        example-1:
+          firstName: string
+          lastName: string
+          email: string
+          phone: string
+    errorReponse:
+      title: errorReponse
+      type: object
+      properties:
+        errorMessage:
+          type: string
+  requestBodies:
+    item:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/item'
+        application/xml:
+          schema:
+            $ref: '#/components/schemas/item'
+      description: item object that needs to be added to the store
+      required: true
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: AuthToken
